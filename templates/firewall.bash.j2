@@ -62,11 +62,11 @@ iptables -A INPUT -p udp -m udp --dport {{ port }} -j ACCEPT
 {% endfor %}
 
 # Accept icmp ping requests.
-iptables -A INPUT -p icmp -j ACCEPT
+# iptables -A INPUT -p icmp -j ACCEPT
 
 # Allow NTP traffic for time synchronization.
-iptables -A OUTPUT -p udp --dport 123 -j ACCEPT
-iptables -A INPUT -p udp --sport 123 -j ACCEPT
+# iptables -A OUTPUT -p udp --dport 123 -j ACCEPT
+# iptables -A INPUT -p udp --sport 123 -j ACCEPT
 
 # Additional custom rules.
 {% for rule in firewall_additional_rules %}
@@ -87,7 +87,11 @@ iptables -A INPUT -m limit --limit 15/minute -j LOG --log-level 7 --log-prefix "
 # Drop all other traffic.
 iptables -A INPUT -j DROP
 
-
+# Check if ipv6 is disabled via kernel cmdline
+cat /proc/cmdline | grep ipv6.disable=1 2>&1 > /dev/null
+if [ "$?" -eq 0 ]; then
+    exit 0
+fi
 # Configure IPv6 if ip6tables is present.
 if [ -x "$(which ip6tables 2>/dev/null)" ]; then
 
